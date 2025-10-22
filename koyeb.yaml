@@ -1,0 +1,63 @@
+# Koyeb Service Configuration
+# This file can be used with the Koyeb CLI or uploaded to the Koyeb dashboard
+
+type: git
+git:
+  repository: github.com/yourusername/lms-backend
+  branch: main
+  build_command: pip install -r requirements.txt
+  run_command: uvicorn main:app --host 0.0.0.0 --port 8000
+
+name: lms-backend-api
+regions:
+  - fra  # Frankfurt (change to your preferred region: fra, was, sin)
+
+instance_type: nano  # Options: nano, small, medium, large
+
+ports:
+  - port: 8000
+    protocol: http
+
+routes:
+  - path: /
+    port: 8000
+
+env:
+  - name: SECRET_KEY
+    value: "your-secret-key-here"  # Generate with: openssl rand -base64 32
+  - name: ALGORITHM
+    value: "HS256"
+  - name: ACCESS_TOKEN_EXPIRE_MINUTES
+    value: "30"
+  - name: PROJECT_NAME
+    value: "Learning Management System API"
+  - name: VERSION
+    value: "1.0.0"
+  - name: DEBUG
+    value: "False"
+  - name: ENVIRONMENT
+    value: "production"
+  # Add these via Koyeb dashboard or CLI for security:
+  # - name: STRIPE_SECRET_KEY
+  #   value: "sk_live_your_stripe_key"
+  # - name: RAZORPAY_KEY_ID
+  #   value: "rzp_live_your_key_id"
+  # - name: RAZORPAY_KEY_SECRET
+  #   value: "your_razorpay_secret"
+
+health_checks:
+  - path: /health
+    port: 8000
+    protocol: http
+    initial_delay: 30s
+    period: 30s
+    timeout: 5s
+    success_threshold: 1
+    failure_threshold: 3
+
+autoscaling:
+  min_scale: 1
+  max_scale: 2
+  targets:
+    - type: cpu
+      value: "70"

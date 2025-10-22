@@ -1,0 +1,46 @@
+name: lms-backend
+services:
+- name: api
+  source_dir: /
+  github:
+    repo: yourusername/lms-backend
+    branch: main
+  run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  envs:
+  - key: SECRET_KEY
+    scope: RUN_TIME
+    type: SECRET
+  - key: ALGORITHM
+    scope: RUN_TIME
+    value: HS256
+  - key: ACCESS_TOKEN_EXPIRE_MINUTES
+    scope: RUN_TIME
+    value: "30"
+  - key: PROJECT_NAME
+    scope: RUN_TIME
+    value: "Learning Management System API"
+  - key: VERSION
+    scope: RUN_TIME
+    value: "1.0.0"
+  - key: DEBUG
+    scope: RUN_TIME
+    value: "False"
+  - key: ENVIRONMENT
+    scope: RUN_TIME
+    value: production
+  # Add these via DigitalOcean dashboard or doctl:
+  # - STRIPE_SECRET_KEY
+  # - RAZORPAY_KEY_ID
+  # - RAZORPAY_KEY_SECRET
+  
+databases:
+- name: lms-db
+  engine: PG
+  num_nodes: 1
+  size: basic-xs
+  version: "14"

@@ -1,0 +1,60 @@
+name: Deploy to Koyeb
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Koyeb CLI
+      run: |
+        curl -L "https://github.com/koyeb/koyeb-cli/releases/latest/download/koyeb-cli_linux_amd64.tar.gz" | tar xz
+        sudo mv koyeb /usr/local/bin/
+        koyeb version
+    
+    - name: Deploy to Koyeb
+      run: |
+        # Set up Koyeb authentication
+        koyeb config set token ${{ secrets.KOYEB_TOKEN }}
+        
+        # Redeploy the service to pick up latest changes
+        koyeb services redeploy api --app lms-backend
+        
+        # Wait for deployment to complete
+        echo "Waiting for deployment to complete..."
+        timeout=300  # 5 minutes
+        while [ $timeout -gt 0 ]; do
+          status=$(koyeb services get api --app lms-backend --output json | jq -r '.status')
+          if [ "$status" = "healthy" ]; then
+            echo "✅ Deployment successful!"
+            break
+          elif [ "$status" = "error" ]; then
+            echo "❌ Deployment failed!"
+            exit 1
+          fi
+          echo "Status: $status, waiting..."
+          sleep 10
+          timeout=$((timeout - 10))
+        done
+        
+        if [ $timeout -le 0 ]; then
+          echo "❌ Deployment timed out!"
+          exit 1
+        fi
+      env:
+        KOYEB_TOKEN: ${{ secrets.KOYEB_TOKEN }}
+    
+    - name: Update deployment status
+      run: |
+        echo "🌐 API deployed successfully!"
+        echo "📖 Documentation: https://lms-backend-api.koyeb.app/docs"
+        echo "🔍 Health check: https://lms-backend-api.koyeb.app/health"
