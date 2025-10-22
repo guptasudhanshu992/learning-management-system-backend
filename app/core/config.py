@@ -3,6 +3,7 @@ from typing import Optional, List
 from pathlib import Path
 from dotenv import load_dotenv
 import secrets
+import os
 
 # Load .env file if it exists
 env_path = Path(".") / ".env"
@@ -62,8 +63,42 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     
-    # SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///./lms.db"
+    # Environment detection
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    
+    # Database settings - Environment specific
+    # PostgreSQL settings for production (Neon)
+    DATABASE_URL: Optional[str] = None
+    POSTGRES_HOST: Optional[str] = None
+    POSTGRES_PORT: int = 5432
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = None
+    
+    # SQLite settings for development
+    SQLITE_DATABASE_PATH: str = "./lms.db"
+    
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        """
+        Get the appropriate database URI based on environment
+        """
+        # If DATABASE_URL is provided (e.g., from Neon), use it directly
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+            
+        # Check if we're in production environment
+        if self.ENVIRONMENT.lower() == "production":
+            # Build PostgreSQL URI from individual components
+            if all([self.POSTGRES_HOST, self.POSTGRES_USER, self.POSTGRES_PASSWORD, self.POSTGRES_DB]):
+                return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            else:
+                # Fallback to SQLite if PostgreSQL config is incomplete
+                print("Warning: PostgreSQL configuration incomplete, falling back to SQLite")
+                return f"sqlite:///{self.SQLITE_DATABASE_PATH}"
+        else:
+            # Development environment - use SQLite
+            return f"sqlite:///{self.SQLITE_DATABASE_PATH}"
     
     # External services
     STRIPE_SECRET_KEY: Optional[str] = None

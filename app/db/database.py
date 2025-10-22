@@ -14,22 +14,42 @@ logger.setLevel(logging.WARNING)  # Set to logging.DEBUG to see all SQL statemen
 # Get database URL from settings
 SQLALCHEMY_DATABASE_URL = settings.SQLALCHEMY_DATABASE_URI
 
-# Create SQLAlchemy engine with connection pooling
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    pool_pre_ping=True,  # Check connections before using them from the pool
-    pool_recycle=3600,   # Recycle connections after 1 hour
-)
+# Determine if we're using PostgreSQL or SQLite
+is_postgresql = SQLALCHEMY_DATABASE_URL.startswith("postgresql://")
+is_sqlite = SQLALCHEMY_DATABASE_URL.startswith("sqlite://")
 
-# Enable SQLite foreign key constraints
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    if isinstance(dbapi_connection, SQLite3Connection):
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.execute("PRAGMA journal_mode=WAL")  # Write-Ahead Logging for better concurrency
-        cursor.close()
+# Create SQLAlchemy engine with appropriate settings
+if is_postgresql:
+    # PostgreSQL configuration for production (Neon)
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        pool_pre_ping=True,  # Check connections before using them from the pool
+        pool_recycle=3600,   # Recycle connections after 1 hour
+        pool_size=10,        # Connection pool size
+        max_overflow=20,     # Maximum overflow connections
+        echo=False           # Set to True to see SQL statements
+    )
+elif is_sqlite:
+    # SQLite configuration for development
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,  # Check connections before using them from the pool
+        pool_recycle=3600,   # Recycle connections after 1 hour
+        echo=False           # Set to True to see SQL statements
+    )
+else:
+    raise ValueError(f"Unsupported database URL: {SQLALCHEMY_DATABASE_URL}")
+
+# Enable SQLite foreign key constraints (only for SQLite)
+if is_sqlite:
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        if isinstance(dbapi_connection, SQLite3Connection):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.execute("PRAGMA journal_mode=WAL")  # Write-Ahead Logging for better concurrency
+            cursor.close()
 
 # Create SessionLocal class with proper settings
 SessionLocal = sessionmaker(

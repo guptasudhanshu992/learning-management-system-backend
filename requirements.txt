@@ -8,6 +8,7 @@ pydantic
 email-validator
 python-slugify
 alembic
+python-dateutil
 razorpay
 stripe
 fastapi-csrf-protect
@@ -20,3 +21,6 @@ itsdangerous
 pytest
 httpx
 pydantic-settings
+# PostgreSQL dependencies for production (Neon)
+psycopg2-binary
+asyncpg
