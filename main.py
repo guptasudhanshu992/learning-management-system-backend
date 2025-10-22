@@ -1,8 +1,6 @@
 import time
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi_csrf_protect import CsrfProtect
 from typing import Callable
@@ -36,8 +34,8 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Backend API for the Learning Management System",
     version=settings.VERSION,
-    docs_url=None,  # Disable default docs for custom implementation
-    redoc_url=None,  # Disable default redoc for custom implementation
+    docs_url="/docs",  # Enable default docs
+    redoc_url="/redoc",  # Enable default redoc
 )
 
 # Apply security middleware
@@ -83,28 +81,8 @@ async def log_requests(request: Request, call_next: Callable) -> Response:
             headers={"X-Request-ID": request_id}
         )
 
-# Rate-limited endpoints for documentation
-@app.get("/docs", include_in_schema=False)
-@limiter.limit("10/minute")
-async def get_docs(request: Request):
-    """Custom Swagger UI with rate limiting"""
-    return get_swagger_ui_html(
-        openapi_url="/openapi.json",
-        title=f"{settings.PROJECT_NAME} - API Documentation",
-        swagger_js_url="/static/swagger-ui-bundle.js",
-        swagger_css_url="/static/swagger-ui.css",
-    )
-
-@app.get("/openapi.json", include_in_schema=False)
-@limiter.limit("10/minute")
-async def get_openapi_schema(request: Request):
-    """OpenAPI schema with rate limiting"""
-    return get_openapi(
-        title=settings.PROJECT_NAME,
-        version=settings.VERSION,
-        description="Backend API for the Learning Management System",
-        routes=app.routes,
-    )
+# Note: Using default FastAPI docs at /docs and /redoc
+# Rate limiting is applied globally through middleware
 
 # Include routers with API versioning
 api_prefix = settings.API_V1_STR

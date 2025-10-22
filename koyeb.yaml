@@ -3,7 +3,7 @@
 
 type: git
 git:
-  repository: github.com/yourusername/lms-backend
+  repository: github.com/guptasudhanshu992/learning-management-system-backend
   branch: main
   build_command: pip install -r requirements.txt
   run_command: uvicorn main:app --host 0.0.0.0 --port 8000
@@ -21,6 +21,10 @@ ports:
 routes:
   - path: /
     port: 8000
+
+# Custom domain configuration
+domains:
+  - name: api.priceactionrepository.com
 
 env:
   - name: SECRET_KEY

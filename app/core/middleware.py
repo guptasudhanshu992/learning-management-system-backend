@@ -51,7 +51,19 @@ def setup_middleware(app: FastAPI):
     # Trusted Host middleware
     if settings.CORS_ORIGINS:
         hosts = [origin.replace("http://", "").replace("https://", "") for origin in settings.CORS_ORIGINS]
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts + ["localhost"])
+        # Add common development hosts
+        development_hosts = [
+            "localhost", 
+            "127.0.0.1", 
+            "localhost:8000", 
+            "127.0.0.1:8000",
+            "0.0.0.0:8000"
+        ]
+        # Add production host
+        production_hosts = [
+            "api.priceactionrepository.com"
+        ]
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=hosts + development_hosts + production_hosts)
     
     # Rate limiting
     app.state.limiter = limiter
@@ -67,7 +79,21 @@ def setup_middleware(app: FastAPI):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        
+        # More permissive CSP for Swagger UI to work properly
+        if request.url.path in ["/docs", "/redoc"]:
+            # Allow inline styles and scripts for API documentation
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net unpkg.com; "
+                "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com; "
+                "font-src 'self' fonts.gstatic.com; "
+                "img-src 'self' data: validator.swagger.io; "
+                "connect-src 'self'"
+            )
+        else:
+            # Stricter CSP for other endpoints
+            response.headers["Content-Security-Policy"] = "default-src 'self'"
         
         return response
     

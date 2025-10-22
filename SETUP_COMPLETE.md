@@ -120,7 +120,13 @@ After deployment, verify everything works:
 
 ## 🎉 Congratulations!
 
-Your FastAPI backend is now production-ready and can be deployed to any modern cloud platform!
+Your FastAPI backend is now production-ready and deployed at **https://api.priceactionrepository.com**!
+
+## 🌐 Production API Access
+
+- **API Documentation:** https://api.priceactionrepository.com/docs
+- **Health Check:** https://api.priceactionrepository.com/health  
+- **Alternative Docs:** https://api.priceactionrepository.com/redoc
 
 ---
 

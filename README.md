@@ -2,7 +2,8 @@
 
 A comprehensive backend API for a Learning Management System built with **FastAPI**, featuring course management, user authentication, e-commerce functionality, and payment processing.
 
-[![CI/CD Pipeline](https://github.com/yourusername/lms-backend/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/yourusername/lms-backend/actions/workflows/ci-cd.yml)
+[![CI/CD Pipeline](https://github.com/guptasudhanshu992/learning-management-system-backend/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/guptasudhanshu992/learning-management-system-backend/actions/workflows/ci-cd.yml)
+[![Production API](https://img.shields.io/badge/Production-api.priceactionrepository.com-green.svg)](https://api.priceactionrepository.com)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -43,8 +44,8 @@ A comprehensive backend API for a Learning Management System built with **FastAP
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/lms-backend.git
-cd lms-backend
+git clone https://github.com/guptasudhanshu992/learning-management-system-backend.git
+cd learning-management-system-backend
 ```
 
 2. **Create and activate virtual environment:**
@@ -88,9 +89,14 @@ uvicorn main:app --reload --port 8000
 ```
 
 7. **Access the API:**
-- API Documentation: http://localhost:8000/docs
-- Alternative docs: http://localhost:8000/redoc
-- Health check: http://localhost:8000/health
+- **Local Development:**
+  - API Documentation: http://localhost:8000/docs
+  - Alternative docs: http://localhost:8000/redoc
+  - Health check: http://localhost:8000/health
+- **Production API:**
+  - API Documentation: https://api.priceactionrepository.com/docs
+  - Alternative docs: https://api.priceactionrepository.com/redoc
+  - Health check: https://api.priceactionrepository.com/health
 
 ## ☁️ Koyeb Deployment (primary)
 

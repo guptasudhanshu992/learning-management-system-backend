@@ -17,10 +17,23 @@ class Settings(BaseSettings):
     # Base URL for frontend (for CORS)
     FRONTEND_URL: str = "http://localhost:3000"
     
+    # Backend URL (official production domain)
+    BACKEND_URL: str = "https://api.priceactionrepository.com"
+    
     # CORS allowed origins
     CORS_ORIGINS: List[str] = [
+        # Development origins
         "http://localhost:3000",
         "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        # Production origins
+        "https://priceactionrepository.com",
+        "https://www.priceactionrepository.com",
+        "https://app.priceactionrepository.com",
+        "https://dashboard.priceactionrepository.com",
     ]
     
     # Security settings

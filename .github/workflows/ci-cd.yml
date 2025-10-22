@@ -131,6 +131,8 @@ jobs:
             --env VERSION=1.0.0 \
             --env DEBUG=False \
             --env ENVIRONMENT=production \
+            --env BACKEND_URL=https://api.priceactionrepository.com \
+            --env CORS_ORIGINS='["https://priceactionrepository.com","https://www.priceactionrepository.com","https://app.priceactionrepository.com"]' \
             --instance-type nano
         fi
       env:

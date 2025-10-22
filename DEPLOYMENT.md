@@ -154,15 +154,21 @@ After deployment, test your API:
 
 1. **Health Check:**
    ```bash
+   # Production API
+   curl https://api.priceactionrepository.com/health
+   
+   # Or your deployed URL
    curl https://your-app-url.com/health
    ```
 
 2. **API Documentation:**
-   Visit: `https://your-app-url.com/docs`
+   - Production: https://api.priceactionrepository.com/docs
+   - Your deployment: `https://your-app-url.com/docs`
 
 3. **Test Authentication:**
    ```bash
-   curl -X POST "https://your-app-url.com/api/auth/register" \
+   # Production API
+   curl -X POST "https://api.priceactionrepository.com/api/auth/register" \
         -H "Content-Type: application/json" \
         -d '{"email":"test@example.com","password":"testpass123","full_name":"Test User"}'
    ```
