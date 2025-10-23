@@ -26,15 +26,21 @@ class Settings(BaseSettings):
         # Development origins
         "http://localhost:3000",
         "http://localhost:5173",
-        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3000", 
         "http://127.0.0.1:5173",
         "http://127.0.0.1:8000",
         "http://localhost:8000",
+        "http://0.0.0.0:3000",
+        "http://0.0.0.0:8000",
+        # Vite dev server ports
+        "http://localhost:5174",
+        "http://localhost:4173",
         # Production origins
         "https://priceactionrepository.com",
-        "https://www.priceactionrepository.com",
+        "https://www.priceactionrepository.com", 
         "https://app.priceactionrepository.com",
         "https://dashboard.priceactionrepository.com",
+        "https://api.priceactionrepository.com",
     ]
     
     # Security settings

@@ -47,7 +47,7 @@ def get_blog_posts(
     result = []
     for post in posts:
         # Get author info
-        author_name = f"{post.author.first_name} {post.author.last_name}" if post.author else "Unknown"
+        author_name = post.author.full_name if post.author else "Unknown"
         
         # Get tags
         tags = [tag.name for tag in post.tags]
@@ -128,7 +128,7 @@ def create_blog_post(
     # Format response
     return {
         **vars(new_post),
-        "author_name": f"{current_user.first_name} {current_user.last_name}",
+        "author_name": current_user.full_name,
         "tags": [tag.name for tag in new_post.tags],
         "comments_count": 0
     }
@@ -156,7 +156,7 @@ def get_blog_post(
         )
     
     # Get author info
-    author_name = f"{post.author.first_name} {post.author.last_name}" if post.author else "Unknown"
+    author_name = post.author.full_name if post.author else "Unknown"
     
     # Get tags
     tags = [tag.name for tag in post.tags]
@@ -238,7 +238,7 @@ def update_blog_post(
     # Format response
     return {
         **vars(post),
-        "author_name": f"{post.author.first_name} {post.author.last_name}",
+        "author_name": post.author.full_name,
         "tags": [tag.name for tag in post.tags],
         "comments_count": db.query(func.count(models.Comment.id)).filter(
             models.Comment.post_id == post.id
@@ -301,7 +301,7 @@ def get_comments(
     for comment in comments:
         # Get user info
         user = db.query(models.User).filter(models.User.id == comment.user_id).first()
-        user_name = f"{user.first_name} {user.last_name}" if user else "Unknown User"
+        user_name = user.full_name if user else "Unknown User"
         
         # Get replies
         replies = db.query(models.Comment).filter(
@@ -311,7 +311,7 @@ def get_comments(
         replies_formatted = []
         for reply in replies:
             reply_user = db.query(models.User).filter(models.User.id == reply.user_id).first()
-            reply_user_name = f"{reply_user.first_name} {reply_user.last_name}" if reply_user else "Unknown User"
+            reply_user_name = reply_user.full_name if reply_user else "Unknown User"
             
             replies_formatted.append({
                 **vars(reply),
@@ -371,7 +371,7 @@ def create_comment(
     # Format response
     return {
         **vars(new_comment),
-        "user_name": f"{current_user.first_name} {current_user.last_name}",
+        "user_name": current_user.full_name,
         "replies": []
     }
 

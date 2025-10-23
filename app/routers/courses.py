@@ -84,7 +84,7 @@ def get_courses(
         # Create response object
         course_response = {
             **vars(course),
-            "instructor_name": f"{course.instructor.first_name} {course.instructor.last_name}",
+            "instructor_name": course.instructor.full_name,
             "rating": round(avg_rating, 1),
             "enrolled_students": enrolled_students_count,
             "categories": categories
@@ -148,7 +148,7 @@ def create_course(
     # Format response
     return {
         **vars(new_course),
-        "instructor_name": f"{current_user.first_name} {current_user.last_name}",
+        "instructor_name": current_user.full_name,
         "rating": 0,
         "enrolled_students": 0,
         "categories": [
@@ -192,7 +192,7 @@ def get_course(
     # Format response
     return {
         **vars(course),
-        "instructor_name": f"{course.instructor.first_name} {course.instructor.last_name}",
+        "instructor_name": course.instructor.full_name,
         "rating": round(avg_rating, 1),
         "enrolled_students": enrolled_students_count,
         "categories": [
@@ -267,7 +267,7 @@ def update_course(
     # Format response
     return {
         **vars(course),
-        "instructor_name": f"{course.instructor.first_name} {course.instructor.last_name}",
+        "instructor_name": course.instructor.full_name,
         "rating": round(avg_rating, 1),
         "enrolled_students": enrolled_students_count,
         "categories": [
@@ -657,7 +657,7 @@ def get_reviews(
     for review in reviews:
         # Get user info
         user = db.query(models.User).filter(models.User.id == review.user_id).first()
-        user_name = f"{user.first_name} {user.last_name}" if user else "Unknown User"
+        user_name = user.full_name if user else "Unknown User"
         
         # Create response object
         review_response = {
@@ -725,5 +725,5 @@ def create_review(
     
     return {
         **vars(new_review),
-        "user_name": f"{current_user.first_name} {current_user.last_name}"
+        "user_name": current_user.full_name
     }

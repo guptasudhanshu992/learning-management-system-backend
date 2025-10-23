@@ -29,8 +29,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    first_name = Column(String)
-    last_name = Column(String)
+    full_name = Column(String, nullable=False)
     hashed_password = Column(String)
     profile_picture = Column(String, nullable=True)
     bio = Column(Text, nullable=True)
@@ -238,7 +237,7 @@ class Comment(Base):
     # Relationships
     post = relationship("BlogPost", back_populates="comments")
     author = relationship("User", back_populates="comments")
-    replies = relationship("Comment", backref=ForeignKey("parent_id"))
+    replies = relationship("Comment", backref="parent")
 
 # Cart item model
 class CartItem(Base):

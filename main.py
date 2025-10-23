@@ -102,8 +102,15 @@ async def root():
         "documentation": "/docs",
         "version": settings.VERSION,
         "status": "running",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "cors_origins": settings.CORS_ORIGINS,
+        "environment": settings.ENVIRONMENT
     }
+
+@app.options("/{path:path}")
+async def options_handler():
+    """Handle preflight OPTIONS requests"""
+    return {"message": "OK"}
 
 # Health check endpoint
 @app.get("/health", tags=["Health"])

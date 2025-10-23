@@ -5,17 +5,15 @@ from typing import List, Optional
 # User Schemas
 class UserBase(BaseModel):
     email: EmailStr
-    first_name: str
-    last_name: str
+    full_name: str = Field(..., min_length=1, max_length=100, description="User's full name")
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8, description="User password with minimum 8 characters")
 
 class UserUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    bio: Optional[str] = None
-    profile_picture: Optional[str] = None
+    full_name: Optional[str] = Field(None, min_length=1, max_length=100, description="User's full name")
+    bio: Optional[str] = Field(None, max_length=500, description="User biography")
+    profile_picture: Optional[str] = Field(None, description="Profile picture URL")
 
 class UserUpdatePassword(BaseModel):
     current_password: str
@@ -30,7 +28,7 @@ class UserResponse(UserBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserAdminCreate(UserCreate):
     role: str = "user"

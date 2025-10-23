@@ -81,8 +81,7 @@ def get_users(
     # Apply filters
     if search:
         query = query.filter(
-            (models.User.first_name.ilike(f"%{search}%")) |
-            (models.User.last_name.ilike(f"%{search}%")) |
+            (models.User.full_name.ilike(f"%{search}%")) |
             (models.User.email.ilike(f"%{search}%"))
         )
     
@@ -114,8 +113,7 @@ def create_user(
     # Create new user
     new_user = models.User(
         email=user.email,
-        first_name=user.first_name,
-        last_name=user.last_name,
+        full_name=user.full_name,
         hashed_password=get_password_hash(user.password),
         role=user.role,
         is_active=user.is_active

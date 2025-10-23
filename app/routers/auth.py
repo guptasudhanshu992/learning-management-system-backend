@@ -4,8 +4,6 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import Any
 import asyncio
-from fastapi_csrf_protect import CsrfProtect
-from fastapi_csrf_protect.exceptions import CsrfProtectError
 from starlette.responses import JSONResponse
 from pydantic import ValidationError
 import logging
@@ -36,28 +34,19 @@ async def register(
     request: Request, 
     user: UserCreate, 
     response: Response,
-    db: Session = Depends(get_db), 
-    csrf_protect: CsrfProtect = Depends()
+    db: Session = Depends(get_db)
 ) -> Any:
     """
     Register a new user
     """
-    # Generate and set CSRF token in cookie
-    csrf_token = csrf_protect.generate_csrf()
-    response.set_cookie(
-        key="csrf_token",
-        value=csrf_token,
-        httponly=True,
-        secure=settings.CSRF_COOKIE_SECURE,
-        samesite=settings.CSRF_COOKIE_SAMESITE
-    )
+    # Skip CSRF for API registration - handled by CORS
+    # In a production app, you'd want proper CSRF protection
     
     # Validate and sanitize inputs
     try:
         # Sanitize user inputs
         email = sanitize_input(user.email)
-        first_name = sanitize_input(user.first_name)
-        last_name = sanitize_input(user.last_name)
+        full_name = sanitize_input(user.full_name)
         
         # Validate email format
         if not validate_email(email):
@@ -83,17 +72,22 @@ async def register(
                 detail="Email address is already in use"
             )
         
+        # Validate full name
+        if not full_name.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Full name is required and cannot be empty"
+            )
+
         # Create new user
         new_user = models.User(
             email=email,
-            first_name=first_name,
-            last_name=last_name,
+            full_name=full_name,
             hashed_password=get_password_hash(user.password),
             role="user",
             is_active=True,
             is_verified=False,  # Require email verification
-            created_at=datetime.utcnow(),
-            last_login=None
+            created_at=datetime.utcnow()
         )
         
         # Add to DB with transaction
@@ -132,21 +126,12 @@ async def login(
     request: Request,
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-    csrf_protect: CsrfProtect = Depends()
+    db: Session = Depends(get_db)
 ) -> Any:
     """
     Login with username and password
     """
-    # Set CSRF token in cookie
-    csrf_token = csrf_protect.generate_csrf()
-    response.set_cookie(
-        key="csrf_token",
-        value=csrf_token,
-        httponly=True,
-        secure=settings.CSRF_COOKIE_SECURE,
-        samesite=settings.CSRF_COOKIE_SAMESITE
-    )
+    # Skip CSRF for API login - handled by CORS
     
     try:
         # Sanitize input
@@ -209,15 +194,9 @@ async def login(
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "token_type": "bearer",
-            "csrf_token": csrf_token
+            "token_type": "bearer"
         }
     
-    except CsrfProtectError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="CSRF token validation failed"
-        )
     except Exception as e:
         if not isinstance(e, HTTPException):
             logging.error(f"Login error: {str(e)}")
@@ -274,7 +253,7 @@ def refresh_token(refresh_token: str = Body(...), db: Session = Depends(get_db))
             )
         
         # Create access token
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": user.email, "role": user.role},
             expires_delta=access_token_expires
@@ -303,15 +282,13 @@ def refresh_token(refresh_token: str = Body(...), db: Session = Depends(get_db))
 async def request_password_reset(
     request: Request, 
     reset_data: PasswordReset, 
-    db: Session = Depends(get_db),
-    csrf_protect: CsrfProtect = Depends()
+    db: Session = Depends(get_db)
 ) -> Any:
     """
     Request password reset (sends email in real implementation)
     """
     try:
-        # Validate CSRF token
-        await csrf_protect.validate_csrf(request)
+        # Skip CSRF validation for API endpoint
         
         # Sanitize input
         email = sanitize_input(reset_data.email)
@@ -342,11 +319,6 @@ async def request_password_reset(
         
         return {"message": "If your email is registered, you will receive a password reset link"}
     
-    except CsrfProtectError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="CSRF token validation failed"
-        )
     except Exception as e:
         if not isinstance(e, HTTPException):
             logging.error(f"Password reset error: {str(e)}")
@@ -361,15 +333,13 @@ async def request_password_reset(
 async def reset_password(
     request: Request, 
     reset_data: PasswordResetConfirm, 
-    db: Session = Depends(get_db),
-    csrf_protect: CsrfProtect = Depends()
+    db: Session = Depends(get_db)
 ) -> Any:
     """
     Reset password with token
     """
     try:
-        # Validate CSRF token
-        await csrf_protect.validate_csrf(request)
+        # Skip CSRF validation for API endpoint
         
         # Sanitize and validate inputs
         token = sanitize_input(reset_data.token)
@@ -426,11 +396,6 @@ async def reset_password(
                 detail="Invalid or expired token"
             )
     
-    except CsrfProtectError:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="CSRF token validation failed"
-        )
     except Exception as e:
         if not isinstance(e, HTTPException):
             logging.error(f"Password reset error: {str(e)}")

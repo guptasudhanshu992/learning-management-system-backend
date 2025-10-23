@@ -28,13 +28,21 @@ def setup_middleware(app: FastAPI):
     csrf_protect._cookie_secure = settings.CSRF_COOKIE_SECURE
     csrf_protect._cookie_samesite = settings.CSRF_COOKIE_SAMESITE
     
-    # CORS middleware
+    # CORS middleware - More permissive for development
+    cors_origins = settings.CORS_ORIGINS
+    if settings.ENVIRONMENT.lower() == "development":
+        # In development, allow all localhost origins
+        cors_origins = ["*"]  # Allow all origins in development
+    
+    print(f"Setting up CORS with origins: {cors_origins}")
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.CORS_ORIGINS,
+        allow_origins=cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
     
     # Session middleware for CSRF protection
@@ -72,6 +80,12 @@ def setup_middleware(app: FastAPI):
     # Security headers middleware
     @app.middleware("http")
     async def add_security_headers(request, call_next):
+        # Log CORS information for debugging
+        origin = request.headers.get("origin")
+        if origin:
+            print(f"Request from origin: {origin}")
+            print(f"Allowed CORS origins: {cors_origins}")
+        
         response = await call_next(request)
         
         # Add security headers
